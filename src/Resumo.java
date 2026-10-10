@@ -79,14 +79,14 @@ public class Resumo {
     }
 
     // Metodo para finalizar um abtimento
-    public boolean finalizarAbatimento(int id) {
+    public boolean finalizarAbatimentoPorId(int id) {
 
         Abatimento abatimento = exibirAbatimentoPorId(id);
 
         if(abatimento == null){
             return false;
         }
-        abatimento.finalizar();
+        abatimento.finalizar(abatimento.getVendedor());
         return true;     
     }  
 
