@@ -1,107 +1,119 @@
-import java.util.ArrayList;
-
-// Classe para uma lista dinâmica de abatimentos (Ela junta todos os abatimentos)
 public class Resumo {
-    private ArrayList<Abatimento> abatimentos;
 
-    public Resumo(ArrayList<Abatimento> abatimentos) {
-        this.abatimentos = abatimentos;
+    private final GerenciadorAbatimentos gerenciador;
+
+    // Recebe o gerenciador que contém os abatimentos
+    public Resumo(GerenciadorAbatimentos gerenciador) {
+
+        if (gerenciador == null) {
+            throw new IllegalArgumentException(
+                "O gerenciador não pode ser nulo"
+            );
+        }
+
+        this.gerenciador = gerenciador;
     }
 
-    // Metodo para Somar todos os valores de abatimentos
-    public double calcularTotal(){
+    // Calcula o valor total de todos os abatimentos
+    public double calcularTotal() {
 
         double total = 0;
 
-        for (Abatimento abatimento : abatimentos) {
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
             total += abatimento.getValor();
-        }   
-            
+        }
+
         return total;
-    }   
-
-    // Metodo para somar todos os valores de abatimentos pendentes
-    public double calcularPendente(){
-
-        double totalPendente = 0;
-
-        for (Abatimento abatimento : abatimentos) {
-            if(abatimento.estaPendente()){
-                totalPendente += abatimento.getValor();
-            }
-        }
-        
-        return totalPendente;
     }
 
-    // Metodo para somar todos os valores de abatimentos finalizados
-    public double calcularFinalizado(){
+    // Calcula o valor total dos abatimentos pendentes
+    public double calcularPendente() {
 
-        double totalFinalizado = 0;
+        double total = 0;
 
-        for (Abatimento abatimento : abatimentos) {
-            if(abatimento.estaFinalizado()){
-                totalFinalizado += abatimento.getValor();
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
+
+            if (abatimento.estaPendente()) {
+                total += abatimento.getValor();
             }
         }
 
-        return totalFinalizado;
+        return total;
     }
 
-    // Metodo para somar todos os valores de abatimentos por industria
+    // Calcula o valor total dos abatimentos finalizados
+    public double calcularFinalizado() {
+
+        double total = 0;
+
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
+
+            if (abatimento.estaFinalizado()) {
+                total += abatimento.getValor();
+            }
+        }
+
+        return total;
+    }
+
+    // Calcula o total de abatimentos de uma indústria
     public double calcularTotalPorIndustria(Industria industria) {
 
         double total = 0;
 
-        for (Abatimento abatimento : abatimentos) {
-            if(abatimento.getIndustria().getId() == (industria.getId())){
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
+
+            if (abatimento.getIndustria().getId() == industria.getId()) {
                 total += abatimento.getValor();
             }
         }
 
         return total;
-
     }
 
-    // Metodo para somar todos os valores de abatimentos por vendedor
+    // Calcula o total de abatimentos de um vendedor
     public double calcularTotalPorVendedor(Vendedor vendedor) {
 
         double total = 0;
 
-        for (Abatimento abatimento : abatimentos) {
-            if(abatimento.getVendedor().getId() == (vendedor.getId())){
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
+
+            if (abatimento.pertenceAoVendedor(vendedor)) {
                 total += abatimento.getValor();
             }
         }
 
         return total;
-
     }
 
-    // Metodo para finalizar um abtimento
-    public boolean finalizarAbatimentoPorId(int id) {
+    // Calcula os abatimentos pendentes de um vendedor
+    public double calcularPendentePorVendedor(Vendedor vendedor) {
 
-        Abatimento abatimento = exibirAbatimentoPorId(id);
+        double total = 0;
 
-        if(abatimento == null){
-            return false;
-        }
-        abatimento.finalizar(abatimento.getVendedor());
-        return true;     
-    }  
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
 
-    // Metodos para adicionar um abatimento
-    public void adicionarAbatimento(Abatimento abatimento){
-        abatimentos.add(abatimento);
-    }
+            if (abatimento.pertenceAoVendedor(vendedor) && abatimento.estaPendente()) {
 
-    // Metodo para busca e exibir um abatimento pelo ID
-    public Abatimento exibirAbatimentoPorId(int id){
-        for (Abatimento abatimento : abatimentos) {
-            if(abatimento.getId() == id){
-                return abatimento;
+                total += abatimento.getValor();
             }
         }
-        return null;
+
+        return total;
+    }
+
+    // Conta a quantidade de abatimentos pendentes
+    public int contarPendentes() {
+
+        int contador = 0;
+
+        for (Abatimento abatimento : gerenciador.listarAbatimentos()) {
+
+            if (abatimento.estaPendente()) {
+                contador++;
+            }
+        }
+
+        return contador;
     }
 }
