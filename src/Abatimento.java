@@ -1,12 +1,8 @@
 import java.time.LocalDate;
 
-public class Abatimento {
-
-
-    
+public class Abatimento {  
     private static int contadorId = 1;
     private int id;
-
 
     private Vendedor vendedor;
     private Cliente cliente;
@@ -78,7 +74,7 @@ public class Abatimento {
         this.descricao = descricao;
     }
 
-    public void setValor(double valor){
+    private void setValor(double valor){
         if (valor < 0){
             throw new IllegalArgumentException("Valor do abatimento não pode ser negativo");
         }
@@ -89,8 +85,6 @@ public class Abatimento {
         this.status = status;
     }
 
-    // Outros Metodos
-
     // Metodo para testar se está finalizado ou pendente
     public boolean estaPendente(){
         return status == StatusAbatimento.PENDENTE;
@@ -100,9 +94,43 @@ public class Abatimento {
         return status == StatusAbatimento.FINALIZADO;
     }
 
-    // Metodo para finalizar
-    public void finalizar(){
+    // Metodos para saber se o vendedor é responsável pelo abatimento
+    public boolean pertenceAoVendedor(Vendedor vendedor){
+
+        return this.vendedor.getId() == vendedor.getId();
+    }
+
+    // Metodo para validar as alterações
+    private void validarPermissao(Vendedor vendedor) {
+        if (!pertenceAoVendedor(vendedor)) {
+            throw new IllegalArgumentException("O abatimento não pertence ao vendedor");
+        }
+    }
+
+   
+    // Metodos para alterar dados do Abatimento (Data, descrição e valor) | Esses metodos SEMPRE validam se o vendedor é validado.
+    public void alterarData(Vendedor vendedor, LocalDate data) {
+        validarPermissao(vendedor);
+        setData(data);
+    }
+    
+    public void alterarDescricao(Vendedor vendedor, String descricao) {
+        validarPermissao(vendedor);
+        setDescricao(descricao);
+    }
+
+    public void alterarValor(Vendedor vendedor, double novoValor) {
+        validarPermissao(vendedor);
+        setValor(novoValor);
+    }
+    
+    public void finalizar(Vendedor vendedor){
+        validarPermissao(vendedor);
         this.status = StatusAbatimento.FINALIZADO;
     }
 
+    public void reabrir(Vendedor vendedor) {
+        validarPermissao(vendedor);
+        this.status = StatusAbatimento.PENDENTE;
+    }
 }
