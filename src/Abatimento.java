@@ -23,7 +23,7 @@ public class Abatimento {
 
         this.id = contadorId;
         contadorId ++;
-        
+
         this.vendedor = vendedor;
         this.cliente = cliente;
         this.industria = industria;
@@ -66,11 +66,11 @@ public class Abatimento {
     }
 
     // Metodos Setters
-    public void setData(LocalDate data){
+    private void setData(LocalDate data){
         this.data = data;
     }
 
-    public void setDescricao(String descricao){
+    private void setDescricao(String descricao){
         this.descricao = descricao;
     }
 
@@ -81,7 +81,7 @@ public class Abatimento {
         this.valor = valor;
     }
 
-    public void setStatus(StatusAbatimento status){
+    private void setStatus(StatusAbatimento status){
         this.status = status;
     }
 
@@ -97,6 +97,10 @@ public class Abatimento {
     // Metodos para saber se o vendedor é responsável pelo abatimento
     public boolean pertenceAoVendedor(Vendedor vendedor){
 
+        if (vendedor == null || this.vendedor == null) {
+            return false;
+        }
+
         return this.vendedor.getId() == vendedor.getId();
     }
 
@@ -107,13 +111,13 @@ public class Abatimento {
         }
     }
 
-   
+
     // Metodos para alterar dados do Abatimento (Data, descrição e valor) | Esses metodos SEMPRE validam se o vendedor é validado.
     public void alterarData(Vendedor vendedor, LocalDate data) {
         validarPermissao(vendedor);
         setData(data);
     }
-    
+
     public void alterarDescricao(Vendedor vendedor, String descricao) {
         validarPermissao(vendedor);
         setDescricao(descricao);
@@ -123,14 +127,14 @@ public class Abatimento {
         validarPermissao(vendedor);
         setValor(novoValor);
     }
-    
+
     public void finalizar(Vendedor vendedor){
         validarPermissao(vendedor);
-        this.status = StatusAbatimento.FINALIZADO;
+        setStatus(StatusAbatimento.FINALIZADO); 
     }
 
     public void reabrir(Vendedor vendedor) {
         validarPermissao(vendedor);
-        this.status = StatusAbatimento.PENDENTE;
+        setStatus(StatusAbatimento.PENDENTE); 
     }
 }
