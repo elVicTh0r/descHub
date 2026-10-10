@@ -1,1163 +1,290 @@
-# DescHub - Documentação do Projeto até o momento
+# DescHub
 
-## 1. O que é o DescHub?
+Sistema de controle de abatimentos comerciais, desenvolvido inicialmente em **Java com Programação Orientada a Objetos (POO)**.
 
-O DescHub é um sistema interno pensado para registrar e controlar
-abatimentos, descontos e ações comerciais negociadas pelos vendedores.
+## Sobre o projeto
 
-O problema que o sistema pretende resolver é simples:
+O DescHub surgiu da necessidade de registrar e acompanhar abatimentos negociados por vendedores com clientes e indústrias. Sem um controle centralizado, a distribuidora pode tomar conhecimento de um desconto apenas quando o cliente já o aplica a um título financeiro.
 
--   vendedores negociam ações e descontos com clientes;
--   essas negociações geram valores que poderão ser abatidos
-    posteriormente;
+A proposta é registrar a negociação, identificar o vendedor responsável e acompanhar os valores **pendentes** e **finalizados**.
 
--   sem um controle centralizado, a empresa pode descobrir o abatimento
-    somente quando o cliente já descontou o valor de um título;
--   o sistema deve permitir registrar esses valores antes que isso
-    aconteça e acompanhar o status de cada abatimento.
+**Estado atual:** aplicação Java executada pelo terminal, com dados armazenados em memória. Ainda não há banco de dados, API REST ou interface web.
 
-A primeira versão possui duas ideias principais:
+## Tecnologias e conceitos
 
-1.  Cadastro de um novo abatimento.
-2.  Resumo dos valores registrados.
+- Java
+- Programação Orientada a Objetos: classes, objetos, construtores e encapsulamento
+- `ArrayList` e laços `for-each`
+- `LocalDate` para datas
+- `enum` para representar status
+- Validação com `IllegalArgumentException`
+- Formatação de saída com `System.out.printf()`
 
-------------------------------------------------------------------------
+## Estrutura
 
-# 2. Tecnologias e etapas do projeto
-
-O projeto foi pensado para evoluir até uma aplicação web:
-
-``` text
-Angular + TypeScript
-        ↓
-      HTTP
-        ↓
-Spring Boot + Java
-        ↓
-       JPA
-        ↓
-      MySQL
-```
-
-Neste momento estamos trabalhando somente com Java puro.
-
-O objetivo é aprender a lógica e a orientação a objetos antes de
-introduzir Spring Boot, banco de dados e Angular.
-
-------------------------------------------------------------------------
-
-# 3. Estrutura atual
-
-Neste momento, as classes podem ficar diretamente dentro de `src`:
-
-``` text
+```text
 src/
 ├── Main.java
+├── Abatimento.java
+├── GerenciadorAbatimentos.java
+├── Resumo.java
 ├── Vendedor.java
 ├── Cliente.java
 ├── Industria.java
-├── Abatimento.java
-├── StatusAbatimento.java
-└── Resumo.java
+└── StatusAbatimento.java
 ```
 
-Essa organização é proposital.
+## Classes e métodos
 
-Mais tarde, quando o projeto virar uma aplicação Spring Boot, a
-organização será separada em camadas como:
+### 1. `Vendedor`
 
-``` text
-controller/
-service/
-repository/
-model/
-```
+Representa o vendedor responsável por uma negociação.
 
-------------------------------------------------------------------------
+**Atributos:** `id` e `nome`.
 
-# 4. Classe Vendedor
+| Método | O que faz |
+| --- | --- |
+| `Vendedor(int id, String nome)` | Cria um vendedor com ID e nome. |
+| `getId()` | Retorna o ID do vendedor. |
+| `getNome()` | Retorna o nome do vendedor. |
+| `setNome(String nome)` | Atualiza o nome do vendedor. |
 
-A classe `Vendedor` representa um vendedor da empresa.
+### 2. `Cliente`
 
-``` java
-public class Vendedor {
-    private int id;
-    private String nome;
+Representa o cliente que participa da negociação comercial.
 
-    public Vendedor(int id, String nome){
-        this.id = id;
-        this.nome = nome;
-    }
+**Atributos:** `id` e `nome`.
 
-    public int getId(){
-        return id;
-    }
+| Método | O que faz |
+| --- | --- |
+| `Cliente(int id, String nome)` | Cria um cliente com ID e nome. |
+| `getId()` | Retorna o ID do cliente. |
+| `getNome()` | Retorna o nome do cliente. |
+| `setNome(String nome)` | Atualiza o nome do cliente, caso esteja implementado na classe. |
 
-    public String getNome(){
-        return nome;
-    }
+### 3. `Industria`
 
-    public void setNome(String nome){
-        this.nome = nome;
-    }
-}
-```
+Representa a indústria associada à ação ou ao abatimento.
 
-## Papel da classe
+**Atributos:** `id` e `nome`.
 
-Representar um vendedor dentro do sistema.
+| Método | O que faz |
+| --- | --- |
+| `Industria(int id, String nome)` | Cria uma indústria com ID e nome. |
+| `getId()` | Retorna o ID da indústria. |
+| `getNome()` | Retorna o nome da indústria. |
+| `setNome(String nome)` | Atualiza o nome da indústria, caso esteja implementado na classe. |
 
-Um objeto `Vendedor` possui:
+### 4. `StatusAbatimento`
 
--   `id`
--   `nome`
+É um `enum` que define os estados possíveis de um abatimento:
 
-Exemplo:
-
-``` java
-Vendedor vendedor = new Vendedor(1, "Gabriel");
-```
-
-------------------------------------------------------------------------
-
-## 4.1 Atributos
-
-``` java
-private int id;
-private String nome;
-```
-
-Os atributos representam os dados que pertencem ao vendedor.
-
-### `id`
-
-Identifica o vendedor.
-
-``` java
-private int id;
-```
-
-### `nome`
-
-Armazena o nome do vendedor.
-
-``` java
-private String nome;
-```
-
-Os atributos são `private` para aplicar encapsulamento.
-
-------------------------------------------------------------------------
-
-## 4.2 Construtor
-
-``` java
-public Vendedor(int id, String nome){
-    this.id = id;
-    this.nome = nome;
-}
-```
-
-O construtor é usado quando criamos um objeto.
-
-Exemplo:
-
-``` java
-Vendedor vendedor = new Vendedor(1, "Gabriel");
-```
-
-O `this` representa o objeto atual.
-
-Então:
-
-``` java
-this.id = id;
-```
-
-significa:
-
-``` text
-atributo id do objeto = valor recebido pelo parâmetro id
-```
-
-------------------------------------------------------------------------
-
-## 4.3 Getters
-
-``` java
-public int getId(){
-    return id;
-}
-
-public String getNome(){
-    return nome;
-}
-```
-
-Os getters permitem acessar informações que estão protegidas por
-`private`.
-
-Exemplo:
-
-``` java
-System.out.println(vendedor.getNome());
-```
-
-------------------------------------------------------------------------
-
-## 4.4 Setter
-
-``` java
-public void setNome(String nome){
-    this.nome = nome;
-}
-```
-
-O setter permite alterar o nome.
-
-Não criamos `setId()` neste momento porque o ID não precisa ser alterado
-depois que o objeto foi criado.
-
-------------------------------------------------------------------------
-
-# 5. Classe Cliente
-
-A classe `Cliente` representa um cliente da empresa.
-
-``` java
-public class Cliente {
-    private int id;
-    private String nome;
-
-    public Cliente(int id, String nome){
-        this.id = id;
-        this.nome = nome;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public String getNome(){
-        return nome;
-    }
-
-    public void setNome(String nome){
-        this.nome = nome;
-    }
-}
-```
-
-Ela segue praticamente a mesma estrutura de `Vendedor`.
-
-Possui:
-
--   `id`
--   `nome`
--   construtor
--   `getId()`
--   `getNome()`
--   `setNome()`
-
-Exemplo:
-
-``` java
-Cliente cliente = new Cliente(1, "Mercadinho Central");
-```
-
-------------------------------------------------------------------------
-
-# 6. Classe Industria
-
-A classe `Industria` representa a indústria relacionada ao abatimento.
-
-``` java
-public class Industria {
-    private int id;
-    private String nome;
-
-    public Industria(int id, String nome){
-        this.id = id;
-        this.nome = nome;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public String getNome(){
-        return nome;
-    }
-
-    public void setNome(String nome){
-        this.nome = nome;
-    }
-}
-```
-
-Também possui:
-
--   `id`
--   `nome`
--   construtor
--   getters
--   setter para o nome
-
-Exemplo:
-
-``` java
-Industria industria = new Industria(1, "Ambev");
-```
-
-------------------------------------------------------------------------
-
-# 7. Enum StatusAbatimento
-
-Criamos um `enum` para representar os possíveis estados de um
-abatimento.
-
-``` java
+```java
 public enum StatusAbatimento {
     PENDENTE,
     FINALIZADO
 }
 ```
 
-## Por que usar enum?
+O `enum` evita usar textos livres para representar o status, reduzindo erros de digitação e padronizando os valores aceitos.
 
-Porque o status não deve ser qualquer texto.
+### 5. `Abatimento`
 
-Seria ruim permitir:
+É a classe central do domínio. Representa uma negociação registrada no sistema.
 
-``` java
-status = "pendente";
-status = "Pendente";
-status = "PENDENTE";
-status = "esperando";
-```
+**Atributos:** `id`, `vendedor`, `cliente`, `industria`, `data`, `descricao`, `valor` e `status`.
 
-Com `enum`, os valores possíveis são definidos previamente.
+**ID automático:** o atributo estático `contadorId` começa em 1 e é incrementado a cada novo objeto. O ID não precisa ser passado ao construtor. Esse contador funciona apenas durante a execução do programa e não substitui um identificador gerado por banco de dados.
 
-Neste momento temos somente:
+| Método | O que faz |
+| --- | --- |
+| `Abatimento(Vendedor, Cliente, Industria, LocalDate, String, double, StatusAbatimento)` | Constrói o abatimento, valida valor não negativo e gera um ID. |
+| `getId()` | Retorna o ID gerado. |
+| `getVendedor()` | Retorna o vendedor responsável. |
+| `getCliente()` | Retorna o cliente. |
+| `getIndustria()` | Retorna a indústria. |
+| `getData()` | Retorna a data da negociação. |
+| `getDescricao()` | Retorna a descrição. |
+| `getValor()` | Retorna o valor. |
+| `getStatus()` | Retorna o status atual. |
+| `setData(LocalDate)` **privado** | Atualiza internamente a data. |
+| `setDescricao(String)` **privado** | Atualiza internamente a descrição. |
+| `setValor(double)` **privado** | Valida que o valor não seja negativo antes de atualizar. |
+| `setStatus(StatusAbatimento)` **privado** | Atualiza internamente o status. |
+| `estaPendente()` | Retorna `true` quando o status é `PENDENTE`. |
+| `estaFinalizado()` | Retorna `true` quando o status é `FINALIZADO`. |
+| `pertenceAoVendedor(Vendedor)` | Compara os IDs para verificar se o vendedor informado é o responsável; retorna `false` para vendedor nulo. |
+| `validarPermissao(Vendedor)` **privado** | Lança uma exceção quando o vendedor não é o responsável. |
+| `alterarData(Vendedor, LocalDate)` | Verifica a permissão e altera a data. |
+| `alterarDescricao(Vendedor, String)` | Verifica a permissão e altera a descrição. |
+| `alterarValor(Vendedor, double)` | Verifica a permissão e valida o novo valor. |
+| `finalizar(Vendedor)` | Verifica a permissão e muda o status para `FINALIZADO`. |
+| `reabrir(Vendedor)` | Verifica a permissão e muda o status para `PENDENTE`. |
 
-``` text
-PENDENTE
-FINALIZADO
-```
+**Exemplo de uso:**
 
-------------------------------------------------------------------------
-
-## 7.1 Status inicial
-
-Um abatimento novo deve começar como:
-
-``` text
-PENDENTE
-```
-
-O vendedor não deve escolher livremente se o abatimento está finalizado.
-
-A ideia é evitar que alguém registre um abatimento já como finalizado
-sem que a dedução tenha realmente acontecido.
-
-------------------------------------------------------------------------
-
-# 8. Classe Abatimento
-
-Esta é a classe principal.
-
-Ela representa um abatimento comercial.
-
-``` java
-import java.time.LocalDate;
-
-public class Abatimento {
-    private int id;
-    private Vendedor vendedor;
-    private Cliente cliente;
-    private Industria industria;
-    private LocalDate data;
-    private String descricao;
-    private double valor;
-    private StatusAbatimento status;
-
-    public Abatimento(
-        int id,
-        Vendedor vendedor,
-        Cliente cliente,
-        Industria industria,
-        LocalDate data,
-        String descricao,
-        double valor,
-        StatusAbatimento status
-    ){
-        this.id = id;
-        this.vendedor = vendedor;
-        this.cliente = cliente;
-        this.industria = industria;
-        this.data = data;
-        this.descricao = descricao;
-        this.valor = valor;
-        this.status = status;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public Vendedor getVendedor(){
-        return vendedor;
-    }
-
-    public Cliente getCliente(){
-        return cliente;
-    }
-
-    public Industria getIndustria(){
-        return industria;
-    }
-
-    public LocalDate getData(){
-        return data;
-    }
-
-    public String getDescricao(){
-        return descricao;
-    }
-
-    public double getValor(){
-        return valor;
-    }
-
-    public StatusAbatimento getStatus(){
-        return status;
-    }
-
-    public void setData(LocalDate data){
-        this.data = data;
-    }
-
-    public void setDescricao(String descricao){
-        this.descricao = descricao;
-    }
-
-    public void setValor(double valor){
-        this.valor = valor;
-    }
-
-    public void setStatus(StatusAbatimento status){
-        this.status = status;
-    }
-
-    public void finalizar(){
-        this.status = StatusAbatimento.FINALIZADO;
-    }
-
-    public boolean estaPendente(){
-        return status == StatusAbatimento.PENDENTE;
-    }
-
-    public boolean estaFinalizado(){
-        return status == StatusAbatimento.FINALIZADO;
-    }
-}
-```
-
-------------------------------------------------------------------------
-
-# 9. Os atributos de Abatimento
-
-## ID
-
-``` java
-private int id;
-```
-
-Identifica o abatimento.
-
-------------------------------------------------------------------------
-
-## Vendedor
-
-``` java
-private Vendedor vendedor;
-```
-
-Aqui acontece algo importante.
-
-O atributo não é:
-
-``` java
-private String vendedor;
-```
-
-Ele é um objeto:
-
-``` java
-private Vendedor vendedor;
-```
-
-Isso significa que um `Abatimento` possui uma relação com um objeto
-`Vendedor`.
-
-Exemplo:
-
-``` java
-Vendedor vendedor = new Vendedor(1, "Gabriel");
-```
-
-Depois:
-
-``` java
+```java
 Abatimento abatimento = new Abatimento(
-    ...,
-    vendedor,
-    ...
+    vendedor1,
+    cliente1,
+    industria1,
+    LocalDate.of(2026, 10, 5),
+    "Ação de inauguração",
+    15000,
+    StatusAbatimento.PENDENTE
 );
+
+abatimento.alterarValor(vendedor1, 18000);
+abatimento.finalizar(vendedor1);
 ```
 
-O abatimento passa a saber qual vendedor criou ou está relacionado à
-ação.
+**Regra de negócio:** um vendedor não pode alterar ou finalizar o abatimento de outro vendedor. As alterações passam por métodos públicos que validam a permissão, em vez de expor os setters diretamente.
 
-------------------------------------------------------------------------
+### 6. `GerenciadorAbatimentos`
 
-## Cliente
+Centraliza a coleção de abatimentos cadastrados. Utiliza `ArrayList<Abatimento>` como armazenamento em memória.
 
-``` java
-private Cliente cliente;
-```
+| Método | O que faz |
+| --- | --- |
+| `GerenciadorAbatimentos()` | Inicializa a lista vazia. |
+| `adicionarAbatimento(Abatimento)` | Adiciona um abatimento, rejeitando `null` e IDs já cadastrados. |
+| `buscarPorId(int)` | Procura um abatimento pelo ID; retorna o objeto ou `null` se não existir. |
+| `existeAbatimento(int)` | Retorna `true` se um ID estiver cadastrado e `false` caso contrário. |
+| `listarAbatimentos()` | Retorna uma nova lista com referências aos abatimentos cadastrados. |
+| `finalizarAbatimentoPorId(int, Vendedor)` | Localiza pelo ID e solicita a finalização com validação do vendedor; retorna `false` se o ID não existir. |
 
-Também é um objeto.
+**Por que `listarAbatimentos()` cria uma lista nova?**
 
-O abatimento possui um cliente relacionado.
-
-------------------------------------------------------------------------
-
-## Industria
-
-``` java
-private Industria industria;
-```
-
-O abatimento também possui uma indústria relacionada.
-
-------------------------------------------------------------------------
-
-## Data
-
-``` java
-private LocalDate data;
-```
-
-Usamos `LocalDate` para representar uma data sem horário.
-
-Exemplo:
-
-``` java
-LocalDate.of(2026, 10, 5)
-```
-
-Representa:
-
-``` text
-05/10/2026
-```
-
-------------------------------------------------------------------------
-
-## Descrição
-
-``` java
-private String descricao;
-```
-
-Guarda uma descrição da ação.
-
-Exemplo:
-
-``` text
-"Ação Inauguração"
-```
-
-------------------------------------------------------------------------
-
-## Valor
-
-``` java
-private double valor;
-```
-
-Representa o valor financeiro do abatimento.
-
-Exemplo:
-
-``` text
-15000
-```
-
-------------------------------------------------------------------------
-
-## Status
-
-``` java
-private StatusAbatimento status;
-```
-
-O status utiliza o `enum` criado anteriormente.
-
-Exemplo:
-
-``` java
-StatusAbatimento.PENDENTE
-```
-
-------------------------------------------------------------------------
-
-# 10. Métodos de Abatimento
-
-## Getters
-
-Os getters permitem consultar os dados:
-
-``` java
-getId()
-getVendedor()
-getCliente()
-getIndustria()
-getData()
-getDescricao()
-getValor()
-getStatus()
-```
-
-Exemplo:
-
-``` java
-abatimento.getValor();
-```
-
-------------------------------------------------------------------------
-
-## Setters
-
-Os setters permitem alterar alguns dados:
-
-``` java
-setData()
-setDescricao()
-setValor()
-setStatus()
-```
-
-Não criamos setter para o ID.
-
-------------------------------------------------------------------------
-
-# 11. Método finalizar()
-
-Criamos um método específico para finalizar o abatimento:
-
-``` java
-public void finalizar(){
-    this.status = StatusAbatimento.FINALIZADO;
+```java
+public ArrayList<Abatimento> listarAbatimentos() {
+    return new ArrayList<>(abatimentos);
 }
 ```
 
-Assim, em vez de fazer:
+A cópia protege a **estrutura da lista interna**: quem recebe a lista não consegue remover ou adicionar registros diretamente no gerenciador. Porém, os elementos são referências aos **mesmos objetos `Abatimento`**. Portanto, uma alteração autorizada em um objeto também aparece nas próximas consultas.
 
-``` java
-abatimento.setStatus(StatusAbatimento.FINALIZADO);
+**Exemplo:**
+
+```java
+GerenciadorAbatimentos gerenciador = new GerenciadorAbatimentos();
+
+gerenciador.adicionarAbatimento(abatimento);
+Abatimento encontrado = gerenciador.buscarPorId(abatimento.getId());
+
+gerenciador.finalizarAbatimentoPorId(abatimento.getId(), vendedor1);
 ```
 
-podemos fazer:
+### 7. `Resumo`
 
-``` java
-abatimento.finalizar();
+É responsável **somente por consultas e cálculos**. Recebe o `GerenciadorAbatimentos` no construtor e consulta a lista atualizada sempre que um cálculo é solicitado.
+
+| Método | O que faz |
+| --- | --- |
+| `Resumo(GerenciadorAbatimentos)` | Recebe o gerenciador e rejeita referência nula. |
+| `calcularTotal()` | Soma os valores de todos os abatimentos. |
+| `calcularPendente()` | Soma os valores com status `PENDENTE`. |
+| `calcularFinalizado()` | Soma os valores com status `FINALIZADO`. |
+| `calcularTotalPorIndustria(Industria)` | Soma os abatimentos associados à indústria informada. |
+| `calcularTotalPorVendedor(Vendedor)` | Soma os abatimentos pertencentes ao vendedor informado. |
+| `calcularPendentePorVendedor(Vendedor)` | Soma apenas os abatimentos pendentes daquele vendedor. |
+| `contarPendentes()` | Conta quantos abatimentos estão pendentes. |
+
+**Exemplo:**
+
+```java
+Resumo resumo = new Resumo(gerenciador);
+
+System.out.printf("Total geral: R$ %.2f%n", resumo.calcularTotal());
+System.out.printf("Total pendente: R$ %.2f%n", resumo.calcularPendente());
+System.out.printf("Quantidade pendente: %d%n", resumo.contarPendentes());
 ```
 
-Isso deixa o código mais próximo da regra de negócio.
+**Integração:** como o `Resumo` guarda uma referência ao gerenciador, um novo abatimento adicionado ao gerenciador entra nos cálculos seguintes, sem recriar o objeto `Resumo`.
 
-A ideia é:
+### 8. `Main`
 
-> "Finalize este abatimento."
+É o ponto de entrada do programa. O método `public static void main(String[] args)` cria os objetos e executa testes manuais das regras de negócio.
 
-------------------------------------------------------------------------
+O fluxo atual é:
 
-# 12. Métodos estaPendente() e estaFinalizado()
+1. Criar três vendedores, três clientes e três indústrias.
+2. Criar três abatimentos, com IDs automáticos.
+3. Cadastrar os abatimentos no gerenciador.
+4. Listar os registros e buscar abatimentos por ID.
+5. Gerar o resumo financeiro inicial.
+6. Consultar totais por vendedor e indústria.
+7. Alterar valor, descrição e data de um abatimento.
+8. Finalizar e reabrir um abatimento.
+9. Testar bloqueio de alteração por vendedor não autorizado.
+10. Testar rejeição de valor negativo e de cadastro duplicado.
+11. Exibir o resumo financeiro final.
 
-Criamos:
+**Importante:** esses testes são executados manualmente no `Main`; ainda não são testes automatizados com JUnit.
 
-``` java
-public boolean estaPendente(){
-    return status == StatusAbatimento.PENDENTE;
-}
-```
+## Como as classes trabalham juntas
 
-E:
-
-``` java
-public boolean estaFinalizado(){
-    return status == StatusAbatimento.FINALIZADO;
-}
-```
-
-Esses métodos retornam `true` ou `false`.
-
-Exemplo:
-
-``` java
-if (abatimento.estaPendente()) {
-    System.out.println("Abatimento pendente");
-}
-```
-
-Isso é melhor do que espalhar comparações do enum pelo código:
-
-``` java
-if (abatimento.getStatus() == StatusAbatimento.PENDENTE)
-```
-
-A comparação ainda existe internamente, mas a regra fica encapsulada na
-própria classe.
-
-------------------------------------------------------------------------
-
-# 13. ArrayList de Abatimento
-
-No `Main`, criamos:
-
-``` java
-ArrayList<Abatimento> abatimentos = new ArrayList<>();
-```
-
-Isso representa uma lista de abatimentos.
-
-Podemos adicionar objetos:
-
-``` java
-abatimentos.add(abat1);
-abatimentos.add(abat2);
-```
-
-Consultar um objeto pelo índice:
-
-``` java
-abatimentos.get(0);
-```
-
-Saber quantos existem:
-
-``` java
-abatimentos.size();
-```
-
-Percorrer todos:
-
-``` java
-for (Abatimento abatimento : abatimentos) {
-    // código
-}
-```
-
-------------------------------------------------------------------------
-
-# 14. A classe Resumo
-
-Criamos a classe `Resumo` para retirar do `Main` a responsabilidade de
-fazer cálculos.
-
-``` java
-import java.util.ArrayList;
-
-public class Resumo {
-    private ArrayList<Abatimento> abatimentos;
-
-    public Resumo(ArrayList<Abatimento> abatimentos) {
-        this.abatimentos = abatimentos;
-    }
-
-    public double calcularTotal() {
-
-        double total = 0;
-
-        for (Abatimento abatimento : abatimentos) {
-            total += abatimento.getValor();
-        }
-
-        return total;
-    }
-}
-```
-
-------------------------------------------------------------------------
-
-# 15. Por que Resumo recebe um ArrayList?
-
-O construtor recebe:
-
-``` java
-ArrayList<Abatimento> abatimentos
-```
-
-Assim podemos criar:
-
-``` java
-Resumo resumo = new Resumo(abatimentos);
-```
-
-O objeto `Resumo` passa a ter acesso à lista.
-
-O atributo:
-
-``` java
-private ArrayList<Abatimento> abatimentos;
-```
-
-guarda essa referência.
-
-E:
-
-``` java
-this.abatimentos = abatimentos;
-```
-
-faz a associação entre o parâmetro recebido e o atributo da classe.
-
-------------------------------------------------------------------------
-
-# 16. Método calcularTotal()
-
-Criamos:
-
-``` java
-public double calcularTotal() {
-
-    double total = 0;
-
-    for (Abatimento abatimento : abatimentos) {
-        total += abatimento.getValor();
-    }
-
-    return total;
-}
-```
-
-A lógica é:
-
-``` text
-total = 0
-
-pega abatimento 1
-    ↓
-soma o valor
-
-pega abatimento 2
-    ↓
-soma o valor
-
-terminou a lista
-    ↓
-retorna o total
-```
-
-O `return` fica depois do `for`.
-
-Se ele estivesse dentro do `for`, o método retornaria na primeira
-repetição.
-
-------------------------------------------------------------------------
-
-# 17. Main
-
-O `Main` é usado atualmente para testar nosso sistema.
-
-Exemplo atual:
-
-``` java
-import java.time.LocalDate;
-import java.util.ArrayList;
-
-public class Main {
-    public static void main(String[] args) {
-
-        Vendedor vendedor = new Vendedor(1, "Gabriel");
-        Vendedor vendedor2 = new Vendedor(2, "Andre");
-
-        Cliente cliente = new Cliente(1, "Mercadinho Central");
-        Cliente cliente2 = new Cliente(2, "Mercadinho Nordeste");
-
-        Industria industria = new Industria(1, "Ambev");
-        Industria industria2 = new Industria(2, "Ambev");
-
-        Abatimento abat1 = new Abatimento(
-            1,
-            vendedor,
-            cliente,
-            industria,
-            LocalDate.of(2026, 10, 5),
-            "Ação Inauguração",
-            15000,
-            StatusAbatimento.PENDENTE
-        );
-
-        Abatimento abat2 = new Abatimento(
-            2,
-            vendedor2,
-            cliente2,
-            industria2,
-            LocalDate.of(2026, 12, 15),
-            "Rebaixa",
-            1300,
-            StatusAbatimento.FINALIZADO
-        );
-
-        ArrayList<Abatimento> abatimentos = new ArrayList<Abatimento>();
-
-        abatimentos.add(abat1);
-        abatimentos.add(abat2);
-
-        Resumo resumo = new Resumo(abatimentos);
-
-        System.out.printf(
-            "Valor total: R$ %.2f",
-            resumo.calcularTotal()
-        );
-    }
-}
-```
-
-------------------------------------------------------------------------
-
-# 18. O papel do Main
-
-O `Main` está funcionando como nosso ambiente de teste.
-
-Ele:
-
-1.  cria vendedores;
-2.  cria clientes;
-3.  cria indústrias;
-4.  cria abatimentos;
-5.  coloca os abatimentos em uma lista;
-6.  cria o objeto `Resumo`;
-7.  pede para o `Resumo` calcular o total;
-8.  imprime o resultado.
-
-O `Main` não deveria concentrar todas as regras do sistema.
-
-Por isso estamos começando a transferir responsabilidades para as
-classes.
-
-------------------------------------------------------------------------
-
-# 19. Antes e depois
-
-## Antes
-
-O `Main` fazia o cálculo:
-
-``` java
-double totalPendente = 0;
-
-for (Abatimento abatimento : abatimentos) {
-    if (abatimento.estaPendente()) {
-        totalPendente += abatimento.getValor();
-    }
-}
-```
-
-Isso fazia o `Main` cuidar tanto da criação dos dados quanto das regras
-de cálculo.
-
-## Depois
-
-A ideia é:
-
-``` java
-Resumo resumo = new Resumo(abatimentos);
-
-double total = resumo.calcularTotal();
-```
-
-O `Main` apenas solicita o resultado.
-
-Quem sabe como calcular é a classe `Resumo`.
-
-------------------------------------------------------------------------
-
-# 20. Separação de responsabilidades
-
-Essa é uma das ideias mais importantes que estamos aprendendo.
-
-Cada classe possui uma responsabilidade.
-
-``` text
-Vendedor
-└── representa um vendedor
-
-Cliente
-└── representa um cliente
-
-Industria
-└── representa uma indústria
-
-Abatimento
-└── representa um abatimento
-
-StatusAbatimento
-└── define os status possíveis
-
-Resumo
-└── realiza cálculos sobre os abatimentos
-
+```text
 Main
-└── cria objetos e testa o sistema
+ ├── cria Vendedor, Cliente e Industria
+ ├── cria Abatimento
+ │    └── aplica validações e regras de permissão
+ ├── usa GerenciadorAbatimentos
+ │    ├── cadastra
+ │    ├── busca
+ │    ├── lista
+ │    └── solicita finalização
+ └── usa Resumo
+      └── consulta GerenciadorAbatimentos para calcular valores
 ```
 
-Não estamos tentando colocar tudo dentro de uma única classe.
+A separação evita que `Resumo` cadastre ou finalize registros e evita que `GerenciadorAbatimentos` repita as validações já existentes em `Abatimento`.
 
-------------------------------------------------------------------------
+## Como executar
 
-# 21. Relação entre os objetos
+**Pré-requisito:** JDK instalado e disponível no terminal.
 
-Um abatimento utiliza outros objetos:
+Na raiz do projeto, compile os arquivos Java:
 
-``` text
-Abatimento
-│
-├── Vendedor
-├── Cliente
-├── Industria
-├── LocalDate
-├── String
-├── double
-└── StatusAbatimento
+```bash
+javac -d bin src/*.java
 ```
 
-Por exemplo:
+Execute o programa:
 
-``` java
-abatimento.getVendedor().getNome();
+```bash
+java -cp bin Main
 ```
 
-Primeiro:
+Os comandos acima consideram que os arquivos estão diretamente em `src/`, sem declaração de `package`.
 
-``` java
-abatimento.getVendedor()
-```
+## Resultado esperado dos testes
 
-retorna um objeto `Vendedor`.
+Com os três abatimentos de exemplo:
 
-Depois:
+| Momento | Total geral | Pendente | Finalizado | Quantidade pendente |
+| --- | ---: | ---: | ---: | ---: |
+| Após o cadastro | R$ 27.700,00 | R$ 27.700,00 | R$ 0,00 | 3 |
+| Após alterar o primeiro para R$ 18.000 e finalizá-lo | R$ 30.700,00 | R$ 12.700,00 | R$ 18.000,00 | 2 |
+| Após reabrir o primeiro | R$ 30.700,00 | R$ 30.700,00 | R$ 0,00 | 3 |
 
-``` java
-.getNome()
-```
+Os testes de permissão, valor negativo e ID duplicado devem gerar as exceções esperadas, tratadas pelo `Main`.
 
-pega o nome desse vendedor.
+## Limitações atuais
 
-Isso mostra como os objetos podem se relacionar.
+- Os dados ficam apenas em memória e são perdidos ao encerrar a aplicação.
+- O contador de IDs é reiniciado quando o programa inicia novamente.
+- Não existe autenticação de usuários: a permissão é validada com base no objeto `Vendedor` informado pelo código.
+- Valores financeiros ainda utilizam `double`; para uma versão de produção, é preferível avaliar `BigDecimal`.
+- Os testes ainda não são automatizados.
 
-------------------------------------------------------------------------
+## Próximas etapas
 
-# 22. Estado atual do projeto
+1. Criar testes unitários com JUnit.
+2. Introduzir Spring Boot e expor uma API REST.
+3. Adicionar persistência com banco de dados.
+4. Desenvolver a interface em Angular e TypeScript.
+5. Integrar frontend e backend para cadastrar e consultar abatimentos.
 
-Até agora conseguimos construir:
+---
 
--   classes básicas do domínio;
--   atributos privados;
--   construtores;
--   getters;
--   setters;
--   uso de `this`;
--   relacionamento entre objetos;
--   `enum`;
--   `LocalDate`;
--   `ArrayList`;
--   `for-each`;
--   métodos que retornam valores;
--   métodos booleanos;
--   encapsulamento;
--   regras simples de negócio;
--   separação de responsabilidades.
-
-Também criamos a primeira camada de lógica de resumo.
-
-------------------------------------------------------------------------
-
-# 23. Próximos passos
-
-A evolução planejada é:
-
-## Etapa atual
-
-Continuar o Java puro.
-
-Próximos métodos da classe `Resumo`:
-
-``` java
-calcularTotalPendente()
-calcularTotalFinalizado()
-```
-
-Depois:
-
-``` java
-calcularTotalPorIndustria()
-calcularTotalPorVendedor()
-```
-
-Sem complicar a primeira versão.
-
-------------------------------------------------------------------------
-
-## Depois
-
-Quando a lógica estiver funcionando:
-
-``` text
-Java puro
-    ↓
-Spring Boot
-    ↓
-API REST
-    ↓
-MySQL
-    ↓
-Angular + TypeScript
-```
-
-O mesmo projeto será transformado em uma aplicação web.
-
-------------------------------------------------------------------------
-
-# 24. Conceito principal aprendido até aqui
-
-O objetivo não é apenas fazer o código funcionar.
-
-Estamos aprendendo a perguntar:
-
-> "Quem deve ser responsável por fazer isso?"
-
-Por exemplo:
-
-``` java
-resumo.calcularTotal();
-```
-
-Em vez de colocar todo o cálculo dentro do `Main`.
-
-Essa forma de pensar será muito importante no Spring Boot,
-principalmente quando começarmos a trabalhar com:
-
--   Controllers;
--   Services;
--   Repositories;
--   Entities;
--   DTOs;
--   banco de dados;
--   APIs.
-
-O DescHub está sendo usado para aprender esses conceitos na prática,
-começando do Java básico e evoluindo gradualmente.
-#
+**DescHub** — projeto de aprendizado e evolução prática em Java, POO e desenvolvimento full stack.
